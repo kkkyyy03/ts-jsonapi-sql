@@ -1,0 +1,38 @@
+{
+  "name": "@withmetoday/ts-jsonapi-sql",
+  "version": "1.0.0",
+  "description": "JSONAPI Modeling Library for MySQL/MariaDB",
+  "main": "lib/index.ts",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/withmetoday/ts-jsonapi-sql.git"
+  },
+  "keywords": [
+    "jsonapi"
+  ],
+  "author": "WithmeToday",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/withmetoday/ts-jsonapi-sql/issues"
+  },
+  "homepage": "https://github.com/withmetoday/ts-jsonapi-sql#readme",
+  "dependencies": {
+    "lodash": "^4.17.10",
+    "pluralize": "^7.0.0",
+    "sqlstring": "^2.3.1"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.116",
+    "@types/pluralize": "0.0.29",
+    "@types/sqlstring": "^2.2.0",
+    "tslint": "^5.11.0",
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.0.3"
+  }
+}
