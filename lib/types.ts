@@ -1,51 +1,135 @@
+import _ from 'lodash'
+
+function must (v: any, path: string, check: (v: any) => boolean): boolean {
+  return _.has(v, path) && check(v[path])
+}
+
+function opts (v: any, path: string, check: (v: any) => boolean): boolean {
+  return _.has(v, path) ? check(v[path]) : true
+}
+
 export interface ISerializeOptions {
-  meta?: IMetaObject
+  meta?: IMetaMap
   links?: ILinkMap
 }
 
-export interface IAttributeObject {
+export interface IAttributeMap {
   [key: string]: any
 }
 
-export interface IMetaObject {
+export interface IMetaMap {
   [key: string]: any
 }
 
 export interface ILinkObject {
   href: string
-  meta?: IMetaObject
+  meta?: IMetaMap
+}
+
+export function isLinkObject (v: any): v is ILinkObject {
+  const hasHref = _.has(v, 'href')
+  const hasMeta = _.has(v, 'meta')
+  return (
+    (hasHref && _.isString(v.href)) && // 문자열 href 를 가지고 있어야 함
+    (hasMeta ? _.isObject(v.meta) : true) // 메타가 있다면 오브젝트여야 함
+  )
 }
 
 export interface ILinkMap {
   [key: string]: string | ILinkObject
 }
 
-export interface IResourceIdentifierObject {
-  id: string
+export interface IResourceIdentifier {
   type: string
-  meta?: IMetaObject
+  id: string
+  meta?: IMetaMap
+}
+
+export function isResourceIdentifierObject (v: any): v is IResourceIdentifier {
+  return (
+    must(v, 'type', _.isString) &&
+    must(v, 'id', _.isString) &&
+    opts(v, 'meta', _.isObject)
+  )
 }
 
 export interface IResourceIdentifierMap {
-  [key: string]: IResourceIdentifierObject
+  [key: string]: IResourceIdentifier
 }
 
 export interface IResourceObject {
-  id?: string
   type: string
-  attributes?: IAttributeObject
+  id?: string
+  attributes?: IAttributeMap
   relationships?: IResourceIdentifierMap
   links?: ILinkMap
-  meta?: IMetaObject
+  meta?: IMetaMap
 }
 
-export interface IDocument {
+export function isResourceObject (v: any): v is IResourceObject {
+  const hasType = _.has(v, 'type')
+  const hasID = _.has(v, 'id')
+  const hasAttr = _.has(v, 'attributes')
+  const hasRels = _.has(v, 'relationships')
+  const hasLink = _.has(v, 'links')
+  const hasMeta = _.has(v, 'meta')
+  return (
+    (hasType && _.isString(v.type)) && // 문자열 타입을 가지고 있어야 함
+    (hasID ? _.isString(v.id) : true) && // ID를 가지고 있다면, 문자열이여야 함
+    (hasAttr ? _.isObject(v.attributes) : true) && // Attributes 객체가 있다면 오브젝트여야 함
+    (hasRels ? _.isObject(v.relationships) : true) && // 관계 객체가 있다면 오브젝트여야 함
+    (hasLink ? _.isObject(v.links) : true) && // 링크 객체가 있다면 오브젝트여야 함
+    (hasMeta ? _.isObject(v.meta) : true) // 메타 객체가 있다면 오브젝트여야 함
+  )
+}
+
+export interface IDocumentObject {
   jsonapi?: {
     version: string
   },
-  data?: IResourceObject | IResourceObject[] | IResourceIdentifierObject | IResourceIdentifierObject[]
-  error?: Error
-  meta?: IMetaObject
-  links?: ILinkMap
-  includes?: IResourceIdentifierObject[]
+  data?: IResourceObject | IResourceIdentifier | IResourceObject[] | IResourceIdentifier[],
+  error?: Error | string,
+  meta?: IMetaMap,
+  links?: ILinkMap,
+  included?: IResourceObject[]
+}
+
+export function isData (
+  v: any
+): v is IResourceObject | IResourceIdentifier | IResourceObject[] | IResourceIdentifier[] {
+  if (!_.isArray(v)) {
+    v = [ v ]
+  }
+  let e: IResourceObject | IResourceIdentifier
+  for (e of v) {
+    if (
+      isResourceIdentifierObject(e) ||
+      isResourceObject(e)
+    ) {
+      continue
+    }
+    return false
+  }
+  return true
+}
+
+export function isDocumentObject (v: any): v is IDocumentObject {
+  const hasVer = _.has(v, 'jsonapi.version')
+  const hasData = _.has(v, 'data')
+  const hasErr = _.has(v, 'error')
+  const hasAttr = _.has(v, 'attributes')
+  const hasRel = _.has(v, 'relationships')
+  const hasLink = _.has(v, 'links')
+  const hasMeta = _.has(v, 'meta')
+  return (
+    (hasVer ? _.isString(v.jsonapi.version) : true) && // 버전이 있다면 문자열이여야 함
+    !(hasData && hasErr) && // 데이터와 오류는 같이 있을 수 없음
+    (hasData || hasErr) && // 데이터 혹은 오류중 하나는 존재해야 함
+    (hasData ? isData(v.data) : true) && // 데이터가 있으면 타입 검사
+    (hasErr ? _.isError(v.error) || _.isString(v.error) : true) && // 오류가 있으면 문자열 혹은 Error 객체여야 함
+    (hasAttr ? _.isObject(v.attributes) : true) && // 속성 객체가 있다면 오브젝트여야 함
+    (hasRel ? _.isObject(v.relationships) : true) && // 관계 객체가 있다면 오브젝트여야 함
+    (hasLink ? _.isObject(v.links) : true) && // 링크 객체가 있다면 오브젝트여야 함
+    (hasMeta ? _.isObject(v.meta) : true) // 메타 객체가 있다면 오브젝트여야 함
+  )
 }
