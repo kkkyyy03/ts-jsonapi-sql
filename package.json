@@ -1,6 +1,6 @@
 {
   "name": "@withmetoday/ts-jsonapi-sql",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "JSONAPI Modeling Library for MySQL/MariaDB",
   "main": "lib/index.ts",
   "directories": {
@@ -28,9 +28,14 @@
     "sqlstring": "^2.3.1"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.4",
     "@types/lodash": "^4.14.116",
+    "@types/mocha": "^5.2.5",
     "@types/pluralize": "0.0.29",
     "@types/sqlstring": "^2.2.0",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-config-standard": "^8.0.1",
     "typescript": "^3.0.3"
