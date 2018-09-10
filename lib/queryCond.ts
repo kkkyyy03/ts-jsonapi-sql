@@ -19,8 +19,7 @@ export class QueryCond {
   }
 
   public get not (): QueryCond {
-    this.prefix.push('NOT')
-    return this
+    return this.togglePrefix('NOT')
   }
 
   public is (value: any) {
@@ -54,7 +53,7 @@ export class QueryCond {
     if (this.pattern) {
       throw ErrDuplicatedCond
     }
-    this.pattern = '?? = ?'
+    this.pattern = pattern
     this.value = value
     return this
   }
@@ -64,6 +63,15 @@ export class QueryCond {
       operator,
       cond
     })
+    return this
+  }
+
+  private togglePrefix (p: string): QueryCond {
+    if (_.includes(this.prefix, p)) {
+      _.pull(this.prefix, p)
+    } else {
+      this.prefix.push(p)
+    }
     return this
   }
 }
