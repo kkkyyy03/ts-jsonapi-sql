@@ -1,6 +1,6 @@
 {
   "name": "@withmetoday/ts-jsonapi-sql",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "JSONAPI Modeling Library for MySQL/MariaDB",
   "main": "lib/index.ts",
   "directories": {
