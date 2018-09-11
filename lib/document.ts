@@ -3,12 +3,12 @@ import { ErrDocumentHasError, ErrInvalidJSON } from './errors'
 import { Model } from './model'
 import {
   IDocumentObject,
+  IDocumentOptions,
   ILinkMap,
   IMetaMap,
   IResourceIdentifier,
   IResourceObject,
   isDocumentObject,
-  ISerializeOptions,
   isResourceIdentifierObject,
   isResourceObject
 } from './types'
@@ -24,7 +24,7 @@ export class Document {
     v?: IDocumentObject
       | Error
       | null,
-    opts?: ISerializeOptions
+    opts?: IDocumentOptions
   ) {
     // Check type
     if (v) {
@@ -47,25 +47,71 @@ export class Document {
     this.validate()
   }
 
-  public add (v: Model<any> | IResourceObject | IResourceIdentifier) {
+  public add (...vs: Array<Model<any> | IResourceObject | IResourceIdentifier>) {
     if (!Array.isArray(this.data)) {
       throw ErrDocumentHasError
     }
 
-    if (v instanceof Model) {
-      this.data.push({
-        type: v.type,
-        id: v.id,
-        attributes: v.fields,
-        relationships: v.relationships,
-        links: v.links,
-        meta: v.meta
-      })
-    } else if (isResourceObject(v)) {
-      this.data.push(v)
-    } else {
-      throw ErrInvalidJSON
+    let v: Model<any> | IResourceObject | IResourceIdentifier
+    for (v of vs) {
+      if (v instanceof Model) {
+        this.data.push({
+          type: v.type,
+          id: v.id,
+          attributes: v.fields,
+          relationships: v.relationships,
+          links: v.links,
+          meta: v.meta
+        })
+      } else if (isResourceObject(v)) {
+        this.data.push(v)
+      } else {
+        throw ErrInvalidJSON
+      }
     }
+  }
+
+  public include (...vs: Array<Model<any> | IResourceObject>) {
+    if (typeof this.included === 'undefined') {
+      this.included = []
+    }
+
+    let v: Model<any> | IResourceObject
+    for (v of vs) {
+      if (v instanceof Model) {
+        this.included.push({
+          type: v.type,
+          id: v.id,
+          attributes: v.fields,
+          relationships: v.relationships,
+          links: v.links,
+          meta: v.meta
+        })
+      } else if (isResourceObject(v)) {
+        this.included.push(v)
+      } else {
+        throw ErrInvalidJSON
+      }
+    }
+  }
+
+  public serialize (): string {
+    const obj: IDocumentObject = {
+      jsonapi: {
+        version: '1.0'
+      },
+      data: (
+        typeof this.data !== 'undefined' && this.data.length === 1
+          ? this.data[0]
+          : this.data
+      ),
+      error: this.error,
+      meta: this.meta,
+      links: this.links,
+      included: this.included
+    }
+
+    return JSON.stringify(obj)
   }
 
   private fromJSON (s: IDocumentObject) {

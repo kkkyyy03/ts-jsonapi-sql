@@ -8,11 +8,6 @@ function opts (v: any, path: string, check: (v: any) => boolean): boolean {
   return _.has(v, path) ? check(v[path]) : true
 }
 
-export interface ISerializeOptions {
-  meta?: IMetaMap
-  links?: ILinkMap
-}
-
 export interface IAttributeMap {
   [key: string]: any
 }
@@ -92,6 +87,11 @@ export interface IDocumentObject {
   meta?: IMetaMap,
   links?: ILinkMap,
   included?: IResourceObject[]
+}
+
+export interface IDocumentOptions {
+  meta?: IMetaMap
+  links?: ILinkMap
 }
 
 export function isData (

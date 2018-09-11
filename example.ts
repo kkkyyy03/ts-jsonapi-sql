@@ -1,10 +1,15 @@
 import {
   deleteQuery,
+  Document,
   ILinkMap,
   IMetaMap,
   insertQuery,
   IResourceIdentifierMap,
-  Model, QueryCond, searchQuery, selectQuery, updateQuery
+  Model,
+  QueryCond,
+  searchQuery,
+  selectQuery,
+  updateQuery
 } from './lib'
 
 interface IFields {
@@ -74,3 +79,10 @@ console.log(updateQuery(withmetoday, withmetoday.update((fields: IFields): IFiel
   fields.name = 'With me Today'
   return fields
 }), new QueryCond('name').is('WithmeToday')))
+
+const doc = new Document()
+
+doc.add(withmetoday)
+doc.include(anotherCompany)
+
+console.log(doc.serialize())
