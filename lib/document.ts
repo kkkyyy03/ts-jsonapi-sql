@@ -2,23 +2,56 @@ import _ from 'lodash'
 import { ErrDocumentHasError, ErrInvalidJSON } from './errors'
 import { Model } from './model'
 import {
+  filterFlatObject,
   IDocumentObject,
-  IDocumentOptions,
+  IDocumentOptions, IFlatObject,
   ILinkMap,
   IMetaMap,
   IResourceIdentifier,
   IResourceObject,
-  isDocumentObject,
+  isDocumentObject, isFlatObject,
   isResourceIdentifierObject,
   isResourceObject
 } from './types'
 
 export class Document {
-  public data?: IResourceObject[]
-  public error?: Error
-  public meta?: IMetaMap
-  public links?: ILinkMap
-  public included?: IResourceObject[]
+  private _data?: IResourceObject[]
+  private _error?: Error
+  private _included?: IResourceObject[]
+  private _meta?: IMetaMap
+  private _links?: ILinkMap
+
+  public get data (): IResourceObject[] | undefined {
+    return this._data
+  }
+
+  public get error (): Error | undefined {
+    return this._error
+  }
+  public set error (err: Error | undefined) {
+    if (err === undefined) {
+      this._data = []
+      this._error = undefined
+      return
+    }
+
+    if (Array.isArray(this._data) && this._data.length === 0) {
+      this._data = undefined
+    }
+    this._error = err
+  }
+
+  public get included (): IResourceObject[] | undefined {
+    return this._included
+  }
+
+  public get meta (): IMetaMap | undefined {
+    return this._meta
+  }
+
+  public get links (): ILinkMap | undefined {
+    return this._links
+  }
 
   constructor (
     v?: IDocumentObject
@@ -26,36 +59,36 @@ export class Document {
       | null,
     opts?: IDocumentOptions
   ) {
+    this._data = []
+
     // Check type
-    if (v) {
+    if (v != null) {
       if (_.isError(v)) {
         this.error = v
       } else {
         this.fromJSON(v)
         return
       }
-    } else {
-      this.data = []
     }
 
     // Optional Data
     if (typeof opts !== 'undefined') {
-      this.meta = opts.meta ? opts.meta : this.meta
-      this.links = opts.links ? opts.links : this.links
+      this._meta = opts.meta ? opts.meta : this._meta
+      this._links = opts.links ? opts.links : this._links
     }
 
     this.validate()
   }
 
-  public add (...vs: Array<Model<any> | IResourceObject | IResourceIdentifier>) {
-    if (!Array.isArray(this.data)) {
+  public add (...vs: Array<Model<any> | IResourceObject | IResourceIdentifier | IFlatObject>) {
+    if (!Array.isArray(this._data)) {
       throw ErrDocumentHasError
     }
 
-    let v: Model<any> | IResourceObject | IResourceIdentifier
+    let v: Model<any> | IResourceObject | IResourceIdentifier | IFlatObject
     for (v of vs) {
       if (v instanceof Model) {
-        this.data.push({
+        this._data.push({
           type: v.type,
           id: v.id,
           attributes: v.fields,
@@ -64,7 +97,13 @@ export class Document {
           meta: v.meta
         })
       } else if (isResourceObject(v)) {
-        this.data.push(v)
+        this._data.push(v)
+      } else if (isFlatObject(v)) {
+        this._data.push({
+          type: v.type,
+          id: v.id,
+          attributes: filterFlatObject(v)
+        })
       } else {
         throw ErrInvalidJSON
       }
@@ -72,14 +111,14 @@ export class Document {
   }
 
   public include (...vs: Array<Model<any> | IResourceObject>) {
-    if (typeof this.included === 'undefined') {
-      this.included = []
+    if (typeof this._included === 'undefined') {
+      this._included = []
     }
 
     let v: Model<any> | IResourceObject
     for (v of vs) {
       if (v instanceof Model) {
-        this.included.push({
+        this._included.push({
           type: v.type,
           id: v.id,
           attributes: v.fields,
@@ -88,11 +127,15 @@ export class Document {
           meta: v.meta
         })
       } else if (isResourceObject(v)) {
-        this.included.push(v)
+        this._included.push(v)
       } else {
         throw ErrInvalidJSON
       }
     }
+  }
+
+  public setError (err: Error) {
+    this.error = err
   }
 
   public serialize (): string {
@@ -101,14 +144,18 @@ export class Document {
         version: '1.0'
       },
       data: (
-        typeof this.data !== 'undefined' && this.data.length === 1
-          ? this.data[0]
-          : this.data
+        typeof this._data !== 'undefined' && this._data.length === 1
+          ? this._data[0]
+          : this._data
       ),
-      error: this.error,
-      meta: this.meta,
-      links: this.links,
-      included: this.included
+      error: (
+        typeof this.error !== 'undefined'
+          ? this.error.toString()
+          : undefined
+      ),
+      meta: this._meta,
+      links: this._links,
+      included: this._included
     }
 
     return JSON.stringify(obj)
@@ -120,7 +167,7 @@ export class Document {
     }
 
     if (typeof s.data !== 'undefined') {
-      this.data = _.isArray(s.data)
+      this._data = _.isArray(s.data)
         ? s.data
         : [ s.data ]
     }
@@ -131,23 +178,23 @@ export class Document {
       this.error = new Error(s.error)
     }
 
-    this.meta = s.meta
-    this.links = s.links
-    this.included = s.included
+    this._meta = s.meta
+    this._links = s.links
+    this._included = s.included
 
     this.validate()
   }
 
   private validate () {
     if (
-      (this.data == null && this.error == null) ||
-      (this.data != null && this.error != null)
+      (this._data == null && this.error == null) ||
+      (this._data != null && this.error != null)
     ) {
       throw ErrInvalidJSON
     }
 
-    if (this.data != null) {
-      let data = this.data as any
+    if (this._data != null) {
+      let data = this._data as any
       if (!_.isArray(data)) {
         data = [ data ]
       }

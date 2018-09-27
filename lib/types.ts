@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { ErrIDRequired } from './errors'
 
 function must (v: any, path: string, check: (v: any) => boolean): boolean {
   return _.has(v, path) && check(v[path])
@@ -62,20 +63,48 @@ export interface IResourceObject {
 }
 
 export function isResourceObject (v: any): v is IResourceObject {
+  if (typeof v !== 'object') {
+    return false
+  }
+
   const hasType = _.has(v, 'type')
   const hasID = _.has(v, 'id')
   const hasAttr = _.has(v, 'attributes')
   const hasRels = _.has(v, 'relationships')
   const hasLink = _.has(v, 'links')
   const hasMeta = _.has(v, 'meta')
-  return (
-    (hasType && _.isString(v.type)) && // 문자열 타입을 가지고 있어야 함
-    (hasID ? _.isString(v.id) : true) && // ID를 가지고 있다면, 문자열이여야 함
-    (hasAttr ? _.isObject(v.attributes) : true) && // Attributes 객체가 있다면 오브젝트여야 함
-    (hasRels ? _.isObject(v.relationships) : true) && // 관계 객체가 있다면 오브젝트여야 함
-    (hasLink ? _.isObject(v.links) : true) && // 링크 객체가 있다면 오브젝트여야 함
-    (hasMeta ? _.isObject(v.meta) : true) // 메타 객체가 있다면 오브젝트여야 함
-  )
+  if (
+    !(
+      (hasType && _.isString(v.type)) && // 문자열 타입을 가지고 있어야 함
+      (hasID ? _.isString(v.id) : true) && // ID를 가지고 있다면, 문자열이여야 함
+      (hasAttr ? _.isObject(v.attributes) : true) && // Attributes 객체가 있다면 오브젝트여야 함
+      (hasRels ? _.isObject(v.relationships) : true) && // 관계 객체가 있다면 오브젝트여야 함
+      (hasLink ? _.isObject(v.links) : true) && // 링크 객체가 있다면 오브젝트여야 함
+      (hasMeta ? _.isObject(v.meta) : true) // 메타 객체가 있다면 오브젝트여야 함
+    )
+  ) {
+    return false
+  }
+
+  let key: string
+  for (key in v) {
+    if (!v.hasOwnProperty(key)) {
+      continue
+    }
+    if (
+      key === 'type' ||
+      key === 'id' ||
+      key === 'attributes' ||
+      key === 'relationships' ||
+      key === 'links' ||
+      key === 'meta'
+    ) {
+      continue
+    }
+    return false
+  }
+
+  return true
 }
 
 export interface IDocumentObject {
@@ -132,4 +161,51 @@ export function isDocumentObject (v: any): v is IDocumentObject {
     (hasLink ? _.isObject(v.links) : true) && // 링크 객체가 있다면 오브젝트여야 함
     (hasMeta ? _.isObject(v.meta) : true) // 메타 객체가 있다면 오브젝트여야 함
   )
+}
+
+export interface IFlatObject {
+  id: string,
+  type: string,
+  [key: string]: any
+}
+
+export function isFlatObject (v: any): v is IFlatObject {
+  return (
+    (_.has(v, 'id') && _.isString(v.id)) ||
+    (_.has(v, 'type') && _.isString(v.type))
+  )
+}
+
+export function filterFlatObject (v: IFlatObject) {
+  const result: { [key: string]: any } = {}
+
+  let key: string
+  for (key in v) {
+    if (!v.hasOwnProperty(key)) {
+      continue
+    }
+
+    if (
+      key === 'id' ||
+      key === 'type'
+    ) {
+      continue
+    }
+
+    result[key] = v[key]
+  }
+
+  return result
+}
+
+export function flatFrom (type: string, v: { [key: string]: any }): IFlatObject {
+  // check ID
+  if (!_.has(v, 'id') || !_.isString(v.id)) {
+    throw ErrIDRequired
+  }
+
+  const result = _.cloneDeep(v) as IFlatObject // Incomplete
+  result.type = type
+
+  return result
 }

@@ -40,4 +40,20 @@ describe('#Document', () => {
       const doc = new Document({})
     }).to.throw(ErrInvalidJSON)
   })
+
+  it('Add the flat object should be OK', () => {
+    const doc = new Document()
+    doc.add({
+      id: 'id',
+      type: 'type',
+      someKey: 'key'
+    })
+    expect(doc.data).to.be.deep.equals([{
+      id: 'id',
+      type: 'type',
+      attributes: {
+        someKey: 'key'
+      }
+    }])
+  })
 })
