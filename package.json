@@ -1,12 +1,13 @@
 {
   "name": "@withmetoday/ts-jsonapi-sql",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "JSONAPI Modeling Library for MySQL/MariaDB",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha",
-    "build": "tsc"
+    "build": "tsc",
+    "pub": "npm run build && npm publish --scope public"
   },
   "repository": {
     "type": "git",
