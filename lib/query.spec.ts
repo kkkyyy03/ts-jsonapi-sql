@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Model } from './model'
-import { deleteQuery, insertQuery, searchQuery, selectQuery, updateQuery } from './query'
+import { deleteQuery, insertQuery, listQuery, searchQuery, selectQuery, updateQuery } from './query'
 import { QueryCond } from './queryCond'
 import { ILinkMap, IMetaMap, IResourceIdentifierMap } from './types'
 
@@ -36,6 +36,11 @@ const sampleFields = {
 }
 
 describe('#Query', () => {
+  it('List Query', () => {
+    expect(listQuery(new TestModel(sampleFields)))
+      .to.be
+      .equals('SELECT * FROM `tests` INNER JOIN (SELECT `id` FROM `tests` LIMIT 10 OFFSET 0) AS `result` USING (`id`);')
+  })
   it('Insert query', () => {
     expect(insertQuery(new TestModel(sampleFields)))
       .to.be.equals("INSERT INTO `tests` (`id`, `key`) VALUES ('" + id + "', 'value');")

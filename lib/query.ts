@@ -38,15 +38,28 @@ function tableName<F> (v: Model<F> | IResourceIdentifier | IResourceObject | str
   return _.snakeCase(pluralize.plural(type))
 }
 
-export function insertQuery<F> (model: Model<F> | IResourceObject) {
-  const id = model.id
+export function listQuery<F> (v: Model<F> | IResourceObject, page: number = 0, size: number = 10) {
+  const type = v.type
+  const id = v.id
+  const table = tableName(type)
+  if (!id) {
+    throw ErrInvalidID
+  }
+  return SqlString.format(
+    `SELECT * FROM ?? INNER JOIN (SELECT ?? FROM ?? LIMIT ? OFFSET ?) AS ?? USING (??);`,
+    [ table, 'id', table, size, page * size, 'result', 'id' ]
+  )
+}
+
+export function insertQuery<F> (v: Model<F> | IResourceObject) {
+  const id = v.id
   if (!id) {
     throw ErrIDRequired
   }
-  const map = fieldMap(model, { id })
+  const map = fieldMap(v, { id })
   return SqlString.format(
     `INSERT INTO ?? (??) VALUES (?);`,
-    [ tableName(model), _.keysIn(map), _.valuesIn(map) ]
+    [ tableName(v), _.keysIn(map), _.valuesIn(map) ]
   )
 }
 
