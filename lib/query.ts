@@ -7,6 +7,8 @@ import { QueryCond } from './queryCond'
 import { IResourceIdentifier, IResourceObject } from './types'
 import { difference } from './utils'
 
+const DEFAULT_PAGE_SIZE = 10
+
 function fieldMap<F> (
   model: Model<F> | IResourceObject,
   base: _.Dictionary<any> = {}
@@ -38,15 +40,29 @@ function tableName<F> (v: Model<F> | IResourceIdentifier | IResourceObject | str
   return _.snakeCase(pluralize.plural(type))
 }
 
-export function listQuery<F> (v: Model<F> | IResourceObject, page: number = 0, size: number = 10) {
+export interface IListQueryOpts {
+  page?: number
+  size?: number
+  cond?: QueryCond
+}
+
+export function listQuery<F> (v: Model<F> | IResourceObject, opts?: IListQueryOpts) {
+  const _opts = opts || {}
+  const page = _opts.page || 0
+  const size = _opts.size || DEFAULT_PAGE_SIZE
+  const cond = _opts.cond
+
   const type = v.type
   const id = v.id
   const table = tableName(type)
   if (!id) {
     throw ErrInvalidID
   }
+
   return SqlString.format(
-    `SELECT * FROM ?? INNER JOIN (SELECT ?? FROM ?? LIMIT ? OFFSET ?) AS ?? USING (??);`,
+    `SELECT * FROM ?? INNER JOIN (` +
+    `SELECT ?? FROM ?? ${cond !== undefined ? 'WHERE ' + cond.build() : ''} LIMIT ? OFFSET ?` +
+    `) AS ?? USING (??);`,
     [ table, 'id', table, size, page * size, 'result', 'id' ]
   )
 }
@@ -72,16 +88,6 @@ export function selectQuery<F> (v: Model<F> | IResourceIdentifier | IResourceObj
   return SqlString.format(
     `SELECT * FROM ?? WHERE ?? = ? LIMIT 1;`,
     [ tableName(type), 'id', id ]
-  )
-}
-
-export function searchQuery<F> (v: Model<F> | IResourceIdentifier | IResourceObject | string, w: QueryCond) {
-  const type = typeof v === 'string'
-    ? v
-    : v.type
-  return SqlString.format(
-    `SELECT * FROM ?? WHERE ${w.build()};`,
-    [ tableName(type) ]
   )
 }
 

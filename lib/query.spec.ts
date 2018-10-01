@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Model } from './model'
-import { deleteQuery, insertQuery, listQuery, searchQuery, selectQuery, updateQuery } from './query'
+import { deleteQuery, insertQuery, listQuery, selectQuery, updateQuery } from './query'
 import { QueryCond } from './queryCond'
 import { ILinkMap, IMetaMap, IResourceIdentifierMap } from './types'
 
@@ -38,8 +38,15 @@ const sampleFields = {
 describe('#Query', () => {
   it('List Query', () => {
     expect(listQuery(new TestModel(sampleFields)))
-      .to.be
-      .equals('SELECT * FROM `tests` INNER JOIN (SELECT `id` FROM `tests` LIMIT 10 OFFSET 0) AS `result` USING (`id`);')
+      .to.be.equals('SELECT * FROM `tests` INNER JOIN (' +
+        'SELECT `id` FROM `tests`  LIMIT 10 OFFSET 0' + // 오타 아님
+      ') AS `result` USING (`id`);')
+  })
+  it('Search query', () => {
+    expect(listQuery(new TestModel(sampleFields), { cond: new QueryCond('id').is(id) }))
+      .to.be.equals('SELECT * FROM `tests` INNER JOIN (' +
+        'SELECT `id` FROM `tests` WHERE `id` = \'' + id + '\' LIMIT 10 OFFSET 0' +
+      ') AS `result` USING (`id`);')
   })
   it('Insert query', () => {
     expect(insertQuery(new TestModel(sampleFields)))
@@ -48,10 +55,6 @@ describe('#Query', () => {
   it('Select query', () => {
     expect(selectQuery(new TestModel(sampleFields)))
       .to.be.equals("SELECT * FROM `tests` WHERE `id` = '" + id + "' LIMIT 1;")
-  })
-  it('Search query', () => {
-    expect(searchQuery(new TestModel(sampleFields), new QueryCond('id').is(id)))
-      .to.be.equals("SELECT * FROM `tests` WHERE `id` = '" + id + "';")
   })
   it('Delete query', () => {
     expect(deleteQuery(new TestModel(sampleFields)))
