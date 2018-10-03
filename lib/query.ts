@@ -43,13 +43,15 @@ function tableName<F> (v: Model<F> | IResourceIdentifier | IResourceObject | str
 export interface IListQueryOpts {
   page?: number
   size?: number
+  sort?: string[]
   cond?: QueryCond
 }
 
 export function listQuery<F> (v: Model<F> | IResourceObject, opts?: IListQueryOpts) {
   const _opts = opts || {}
-  const page = _opts.page || 0
-  const size = _opts.size || DEFAULT_PAGE_SIZE
+  const page = _opts.page !== undefined ? _opts.page : 0
+  const size = _opts.size !== undefined ? _opts.size : DEFAULT_PAGE_SIZE
+  const sort = _opts.sort !== undefined ? _opts.sort : []
   const cond = _opts.cond
 
   const type = v.type
@@ -60,9 +62,12 @@ export function listQuery<F> (v: Model<F> | IResourceObject, opts?: IListQueryOp
   }
 
   return SqlString.format(
-    `SELECT * FROM ?? INNER JOIN (` +
-    `SELECT ?? FROM ?? ${cond !== undefined ? 'WHERE ' + cond.build() : ''} LIMIT ? OFFSET ?` +
-    `) AS ?? USING (??);`,
+    `SELECT * FROM ?? INNER JOIN (
+      SELECT ?? FROM ??
+      ${cond !== undefined ? 'WHERE ' + cond.build() : ''}
+      ${sort.length !== 0 ? 'ORDER BY `' + sort.join('`, `') + '`' : ''}
+      LIMIT ? OFFSET ?
+    ) AS ?? USING (??);`,
     [ table, 'id', table, size, page * size, 'result', 'id' ]
   )
 }
