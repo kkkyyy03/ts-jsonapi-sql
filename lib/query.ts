@@ -65,9 +65,10 @@ export function listQuery<F> (v: Model<F> | IResourceObject, opts?: IListQueryOp
     `SELECT * FROM ?? INNER JOIN (
       SELECT ?? FROM ??
       ${cond !== undefined ? 'WHERE ' + cond.build() : ''}
-      ${sort.length !== 0 ? 'ORDER BY `' + sort.join('`, `') + '`' : ''}
       LIMIT ? OFFSET ?
-    ) AS ?? USING (??);`,
+    ) AS ?? USING (??)
+    ${sort.length !== 0 ? 'ORDER BY \`' + sort.join('\`, \`') + '\`' : ''}
+    ;`,
     [ table, 'id', table, size, page * size, 'result', 'id' ]
   )
 }

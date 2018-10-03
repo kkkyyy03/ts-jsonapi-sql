@@ -39,23 +39,23 @@ const sampleFields = {
 describe('#Query', () => {
   it('List query', () => {
     expect(listQuery(new TestModel(sampleFields)).replace(/\s+/g, ' '))
-      .to.be.equals('SELECT * FROM `tests` INNER JOIN ( SELECT `id` FROM `tests` LIMIT 10 OFFSET 0 ) AS `result` USING (`id`);')
+      .to.be.equals('SELECT * FROM `tests` INNER JOIN ( SELECT `id` FROM `tests` LIMIT 10 OFFSET 0 ) AS `result` USING (`id`) ;')
   })
   it('List query with Single Sort', () => {
     expect(listQuery(new TestModel(sampleFields), { sort: [ 'key' ] }).replace(/\s+/g, ' '))
-      .to.be.equals('SELECT * FROM `tests` INNER JOIN ( SELECT `id` FROM `tests` ORDER BY `key` LIMIT 10 OFFSET 0 ) AS `result` USING (`id`);')
+      .to.be.equals('SELECT * FROM `tests` INNER JOIN ( SELECT `id` FROM `tests` LIMIT 10 OFFSET 0 ) AS `result` USING (`id`) ORDER BY `key` ;')
   })
   it('List query with Many Sort', () => {
     expect(listQuery(new TestModel(sampleFields), { sort: [ 'id', 'key' ] }).replace(/\s+/g, ' '))
-      .to.be.equals('SELECT * FROM `tests` INNER JOIN ( SELECT `id` FROM `tests` ORDER BY `id`, `key` LIMIT 10 OFFSET 0 ) AS `result` USING (`id`);')
+      .to.be.equals('SELECT * FROM `tests` INNER JOIN ( SELECT `id` FROM `tests` LIMIT 10 OFFSET 0 ) AS `result` USING (`id`) ORDER BY `id`, `key` ;')
   })
   it('Search query', () => {
     expect(listQuery(new TestModel(sampleFields), { cond: new QueryCond('id').is('id') }).replace(/\s+/g, ' '))
-      .to.be.equals('SELECT * FROM `tests` INNER JOIN ( SELECT `id` FROM `tests` WHERE `id` = \'id\' LIMIT 10 OFFSET 0 ) AS `result` USING (`id`);')
+      .to.be.equals('SELECT * FROM `tests` INNER JOIN ( SELECT `id` FROM `tests` WHERE `id` = \'id\' LIMIT 10 OFFSET 0 ) AS `result` USING (`id`) ;')
   })
   it('Search query with Sort', () => {
     expect(listQuery(new TestModel(sampleFields), { cond: new QueryCond('id').is('id'), sort: [ 'key' ] }).replace(/\s+/g, ' '))
-      .to.be.equals('SELECT * FROM `tests` INNER JOIN ( SELECT `id` FROM `tests` WHERE `id` = \'id\' ORDER BY `key` LIMIT 10 OFFSET 0 ) AS `result` USING (`id`);')
+      .to.be.equals('SELECT * FROM `tests` INNER JOIN ( SELECT `id` FROM `tests` WHERE `id` = \'id\' LIMIT 10 OFFSET 0 ) AS `result` USING (`id`) ORDER BY `key` ;')
   })
   it('Insert query', () => {
     expect(insertQuery(new TestModel(sampleFields)))
