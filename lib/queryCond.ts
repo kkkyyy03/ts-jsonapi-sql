@@ -30,6 +30,10 @@ export class QueryCond {
     return this.set('?? LIKE ?', value)
   }
 
+  public jsonContains (value: any) {
+    return this.set('JSON_CONTAINS(??, ?)', value)
+  }
+
   public and (cond: QueryCond): QueryCond {
     return this.addChild('AND', cond)
   }

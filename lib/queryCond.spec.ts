@@ -18,6 +18,10 @@ describe('#QueryCond', () => {
     expect(new QueryCond('key').not.like('value').build())
       .to.be.equals("NOT `key` LIKE 'value'")
   })
+  it('JSON_CONTAINS', () => {
+    expect(new QueryCond('key').jsonContains('"value"').build())
+      .to.be.equals("JSON_CONTAINS(`key`, '\\\"value\\\"')")
+  })
   it('toggle `not`', () => {
     expect(new QueryCond('key').not.not.is('value').build())
       .to.be.equals("`key` = 'value'")
