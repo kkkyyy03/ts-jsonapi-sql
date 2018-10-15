@@ -1,7 +1,7 @@
 {
-  "name": "@withmetoday/ts-jsonapi-sql",
+  "name": "@withmetoday/jsonapi",
   "version": "1.3.6",
-  "description": "JSONAPI Modeling Library for MySQL/MariaDB",
+  "description": "JSONAPI Modeling Library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/withmetoday/ts-jsonapi-sql.git"
+    "url": "git+https://github.com/withmetoday/jsonapi.git"
   },
   "keywords": [
     "jsonapi"
@@ -20,9 +20,9 @@
   "author": "WithmeToday",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/withmetoday/ts-jsonapi-sql/issues"
+    "url": "https://github.com/withmetoday/jsonapi/issues"
   },
-  "homepage": "https://github.com/withmetoday/ts-jsonapi-sql#readme",
+  "homepage": "https://github.com/withmetoday/jsonapi#readme",
   "dependencies": {
     "@types/lodash": "^4.14.116",
     "@types/pluralize": "0.0.29",

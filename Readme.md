@@ -1,10 +1,8 @@
-# JSONAPI for SQL
-
-TypeScript 3 is required.
+# JSONAPI Library
 
 ## Features
 
-* Simple modeling
+* Easy Modeling
 * SQL Builder with models (powered by [sqlstring](https://github.com/mysqljs/sqlstring))
 * Serialize to [JSON API](http://jsonapi.org)
 
